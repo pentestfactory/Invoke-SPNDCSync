@@ -7,6 +7,7 @@ $EXT = ".txt"
 $LOG = $PATH + $DATE + "_" + "DCSync_NTLM_full" + $EXT
 $SPNLOG = $PATH + $DATE + "_" + "spnuser_fulldetails" + $EXT
 $SPNUSERS = $PATH + $DATE + "_" + "spnuser_samaccountname" + $EXT
+$SPNHASHES = $PATH + $DATE + "_" + "DCSYNC_NTLM_SPN_full" + $EXT
 $HASHES = $PATH + $DATE + "_" + "DCSync_NTLM_Hashes" + $EXT
 $USERS = $PATH + $DATE + "_" + "DCSync_NTLM_Users" + $EXT
 $IMPORTFILE = $PATH + $DATE + "_" + "DCSync_NTLM_UserHash_Import" + $EXT
@@ -46,16 +47,16 @@ if ($confirmation -eq 'y') {
     Write-Host "[!] Extracting SPN users from DCSync logfile" -ForegroundColor Yellow
     foreach ($spn in $loop) {
     get-content $LOG -ReadCount 1000 |
-        foreach { $_ -match $spn } >> $LOGSPN
+        foreach { $_ -match $spn } >> $SPNHASHES
     }
 
     # GET NT-HASHES ONLY
     Write-Host "[~] Extracting NT-Hashes from logfile" -ForegroundColor Yellow
-    (Get-Content -LiteralPath $LOGSPN) -notmatch '\$' | ForEach-Object {$_.Split("`t")[2]} > $HASHES
+    (Get-Content -LiteralPath $SPNHASHES) -notmatch '\$' | ForEach-Object {$_.Split("`t")[2]} > $HASHES
 
     # GET USERS ONLY
     Write-Host "[~] Extracting users from logfile" -ForegroundColor Yellow
-    (Get-Content -LiteralPath $LOGSPN) -notmatch '\$' | ForEach-Object {$_.Split("`t")[1]} > $USERS
+    (Get-Content -LiteralPath $SPNHASHES) -notmatch '\$' | ForEach-Object {$_.Split("`t")[1]} > $USERS
 
     # CONCAT USER AND NT-HASH INTO OUTFILE
     Write-Host "[~] Create user/hash merge file" -ForegroundColor Yellow
