@@ -62,6 +62,12 @@ if ($confirmation -eq 'y') {
     {
         ('{0},{1}' -f $File1[$i],$File2[$i]) |Add-Content $IMPORTFILE
     }
+    
+    # final message
+    Write-Host ""
+    Write-Host "[OK] Hash extraction completed" -ForegroundColor Green
+    Write-Host ""
+    explorer $PATH
 
 }else{
     Write-Host "[!] Script aborted due to wrong domain. Please hardcode the domain in the PS1 script (line 21)." -ForegroundColor Red
