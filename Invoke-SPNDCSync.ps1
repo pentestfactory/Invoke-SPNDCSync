@@ -64,10 +64,11 @@ if ($confirmation -eq 'y') {
     }
     
    # validate count of SPN users and DCSynced users
+    Write-Host ""
     $count1 = $loop.length
     $count2 = (Get-Content $IMPORTFILE).Length
-    Write-Host "[CHECK] Enumerated SPN users: $count1" -ForegroundColor Yellow
-    Write-Host "[CHECK] Extracted NT-Hashes : $count2" -ForegroundColor Yellow
+    Write-Host "[CHECK] Enumerated SPN users: $count1" -ForegroundColor Gray
+    Write-Host "[CHECK] Extracted NT-Hashes : $count2" -ForegroundColor Gray
     
     # final message
     Write-Host ""
