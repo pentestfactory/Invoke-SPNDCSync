@@ -2,7 +2,7 @@
 
 # variables
 $DATE = $(get-date -f yyyyMMddThhmm)
-$PATH = "C:\temp\" + $DATE + "_" + "DCSYNC" + "\"
+$PATH = "C:\temp\" + $DATE + "_" + "SPN-DCSYNC" + "\"
 $EXT = ".txt"
 $LOG = $PATH + $DATE + "_" + "DCSync_NTLM_full" + $EXT
 $LOGSPN = $PATH + $DATE + "_" + "DCSYNC_NTLM_SPN_full" + $EXT
