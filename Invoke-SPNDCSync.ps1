@@ -43,7 +43,7 @@ if ($confirmation -eq 'y') {
     Write-Host "[!] Extracting SPN users from DCSync logfile" -ForegroundColor Yellow
     foreach ($spn in $loop) {
     get-content $LOG -ReadCount 1000 |
-        foreach { $_ -match $spn } >> $LOGSPN
+        foreach { $_ -match "\t$spn\t" } >> $LOGSPN
     }
 
     # GET NT-HASHES ONLY
