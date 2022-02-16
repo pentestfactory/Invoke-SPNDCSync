@@ -48,11 +48,11 @@ if ($confirmation -eq 'y') {
 
     # GET NT-HASHES ONLY
     Write-Host "[~] Extracting NT-Hashes from logfile" -ForegroundColor Yellow
-    (Get-Content -LiteralPath $SPNHASHES) -notmatch '\$' | ForEach-Object {$_.Split("`t")[2]} > $HASHES
+    (Get-Content -LiteralPath $LOGSPN) -notmatch '\$' | ForEach-Object {$_.Split("`t")[2]} > $HASHES
 
     # GET USERS ONLY
     Write-Host "[~] Extracting users from logfile" -ForegroundColor Yellow
-    (Get-Content -LiteralPath $SPNHASHES) -notmatch '\$' | ForEach-Object {$_.Split("`t")[1]} > $USERS
+    (Get-Content -LiteralPath $LOGSPN) -notmatch '\$' | ForEach-Object {$_.Split("`t")[1]} > $USERS
 
     # CONCAT USER AND NT-HASH INTO OUTFILE
     Write-Host "[~] Create user/hash merge file" -ForegroundColor Yellow
