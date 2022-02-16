@@ -63,6 +63,12 @@ if ($confirmation -eq 'y') {
         ('{0},{1}' -f $File1[$i],$File2[$i]) |Add-Content $IMPORTFILE
     }
     
+   # validate count of SPN users and DCSynced users
+    $count1 = $loop.length
+    $count2 = $IMPORTFILE.length
+    Write-Host "[CHECK] Enumerated SPN users: $count1" -ForegroundColor Yellow
+    Write-Host "[CHECK] Extracted NT-Hashes : $count2" -ForegroundColor Yellow
+    
     # final message
     Write-Host ""
     Write-Host "[OK] Hash extraction completed" -ForegroundColor Green
